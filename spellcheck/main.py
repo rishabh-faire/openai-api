@@ -7,6 +7,10 @@ from dotenv import load_dotenv
 # Instantiate environment variables
 load_dotenv()
 openai.api_key = os.getenv('API_KEY')
+directory_name = os.path.dirname(__file__)
+examples_filepath = os.path.join(directory_name, 'data/examples.csv')
+input_filepath = os.path.join(directory_name, 'data/input.csv')
+output_filepath = os.path.join(directory_name, 'data/output.csv')
 
 
 def generate_examples():
@@ -15,7 +19,7 @@ def generate_examples():
     examples = []
 
     # Read input file
-    with open('examples.csv', newline='') as input_file:
+    with open(examples_filepath, newline='') as input_file:
         reader = csv.reader(input_file, delimiter=',')
 
         # Iterate over each row in the input csv file to generate output row
@@ -100,7 +104,7 @@ def chat(query):
 output_data = []
 
 # Read input file
-with open('input.csv', newline='') as input_file:
+with open(input_filepath, newline='') as input_file:
     reader = csv.reader(input_file, delimiter=',')
 
     # Iterate over each row in the input csv file to generate output row
@@ -112,7 +116,7 @@ with open('input.csv', newline='') as input_file:
         output_data.append([query, response])
 
 # Write to output file
-with open('output.csv', 'w', newline='') as output_file:
+with open(output_filepath, 'w', newline='') as output_file:
     spamwriter = csv.writer(output_file, delimiter=',')
 
     # Write each query response to the output file

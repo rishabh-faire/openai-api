@@ -15,36 +15,47 @@ def generate_messages(query):
     Keyword arguments:
     query -- the search query to be checked for spelling mistakes
     """
-    system_message = 'You are a search engine for a wholesale e-commerce website. I will provide you with a search query. Respond with "true" if the query is mis-spelled, or "false" if the query is spelled correctly.'
+    system_message = """You are a search engine for a wholesale e-commerce website. 
+    I will provide you with a search query. Respond with the spell corrected query 
+    if the query is spelled incorrectly, and with the same query if the query is 
+    spelled correctly, and with "unsure" if you are unsure."""
+
     few_shots = [
         {
             'query': 'candals',
-            'answer': 'true'
+            'answer': 'candles'
         },
         {
             'query': 'plus size clothing',
-            'answer': 'false'
+            'answer': 'plus size clothing'
         },
         {
             'query': 'man neclesses',
-            'answer': 'true'
+            'answer': 'man necklaces'
         },
         {
             'query': 'home decor',
-            'answer': 'false'
+            'answer': 'home decor'
         },
         {
             'query': 'abstrac',
-            'answer': 'true'
+            'answer': 'abstract'
         },
+        {
+            'query': 'goldkette 15 it',
+            'answer': 'unsure'
+        }
     ]
 
+    # Add system message
     messages = [
         {
             'role': 'system',
             'content': system_message
         }
     ]
+
+    # Add few shot examples
     for shot in few_shots:
         messages.append(
             {
@@ -58,6 +69,14 @@ def generate_messages(query):
                 'content': shot['answer']
             }
         )
+
+    # Add user input query
+    messages.append(
+        {
+            'role': 'user',
+            'content': query
+        }
+    )
 
     return messages
 
@@ -91,6 +110,7 @@ with open('input.csv', newline='') as input_file:
         query = row[0]
         response = chat(query)
 
+        print([query, response])  # debug
         output_data.append([query, response])
 
 # Write to output file

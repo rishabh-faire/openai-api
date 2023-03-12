@@ -9,43 +9,40 @@ load_dotenv()
 openai.api_key = os.getenv('API_KEY')
 
 
-def generate_messages(query):
+def generate_examples():
+    """Generate set of few-shot mis-spelling examples for the chat model from source file
+    """
+    examples = []
+
+    # Read input file
+    with open('examples.csv', newline='') as input_file:
+        reader = csv.reader(input_file, delimiter=',')
+
+        # Iterate over each row in the input csv file to generate output row
+        for row in reader:
+            query = row[0]
+            answer = row[1]
+
+            examples.append(
+                {
+                    'query': query,
+                    'answer': answer
+                }
+            )
+
+    return examples
+
+
+def generate_messages(query, examples):
     """Generate single set of messages for mis-spelling request to chat model, including few_shot examples
 
     Keyword arguments:
     query -- the search query to be checked for spelling mistakes
     """
     system_message = """You are a search engine for a wholesale e-commerce website. 
-    I will provide you with a search query. Respond with the spell corrected query 
-    if the query is spelled incorrectly, and with the same query if the query is 
-    spelled correctly, and with "unsure" if you are unsure."""
-
-    few_shots = [
-        {
-            'query': 'candals',
-            'answer': 'candles'
-        },
-        {
-            'query': 'plus size clothing',
-            'answer': 'plus size clothing'
-        },
-        {
-            'query': 'man neclesses',
-            'answer': 'man necklaces'
-        },
-        {
-            'query': 'home decor',
-            'answer': 'home decor'
-        },
-        {
-            'query': 'abstrac',
-            'answer': 'abstract'
-        },
-        {
-            'query': 'goldkette 15 it',
-            'answer': 'unsure'
-        }
-    ]
+    I will provide you with a user entered search query. Respond with true
+    if the query is spelled incorrectly, and with false if the query is 
+    spelled correctly or if you are unsure."""
 
     # Add system message
     messages = [
@@ -56,17 +53,17 @@ def generate_messages(query):
     ]
 
     # Add few shot examples
-    for shot in few_shots:
+    for example in examples:
         messages.append(
             {
                 'role': 'user',
-                'content': shot['query']
+                'content': example['query']
             }
         )
         messages.append(
             {
                 'role': 'assistant',
-                'content': shot['answer']
+                'content': example['answer']
             }
         )
 
@@ -87,9 +84,10 @@ def chat(query):
     Keyword arguments:
     query -- the search query to be checked for spelling mistakes
     """
+    examples = generate_examples()
     raw_response = openai.ChatCompletion.create(
         model='gpt-3.5-turbo',
-        messages=generate_messages(query),
+        messages=generate_messages(query, examples),
         temperature=0,
     )
 
